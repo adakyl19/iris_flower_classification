@@ -17,7 +17,10 @@ from sklearn.neighbors import KNeighborsClassifier
 # Load the Iris dataset
 df = pd.read_csv('Iris.csv')
 df.drop(columns=['Id'], inplace=True)
+
+
 #with some data exploration and visualization
+
 print("=" * 60)
 print("STEP 1: DATA EXPLORATION")
 print("=" * 60)
@@ -52,7 +55,7 @@ for ax, feat in zip(axes.flat, features):
 plt.tight_layout()
 plt.savefig("plot_distributions.png", dpi=150)
 plt.close()
-print("\n✓ Saved: plot_distributions.png")
+print("\n Saved: plot_distributions.png")
 
 # Pair-plot style scatter matrix
 fig, axes = plt.subplots(2, 3, figsize=(14, 9))
@@ -70,15 +73,9 @@ for ax, (f1, f2) in zip(axes.flat, pairs):
 plt.tight_layout()
 plt.savefig("plot_scatter.png", dpi=150)
 plt.close()
-print("✓ Saved: plot_scatter.png")
+print("Saved: plot_scatter.png")
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# STEP 3 — PREPROCESS THE DATA
-# ══════════════════════════════════════════════════════════════════════════════
-"""
-
-"""
+#process the data and prepare for training
 
 X = df[features].values          # shape: (150, 4)
 y = df["Species"].values          # shape: (150,)
@@ -89,29 +86,26 @@ y_encoded = le.fit_transform(y)   # [0, 0, ..., 1, 1, ..., 2, 2, ...]
 print("\n" + "=" * 60)
 print("STEP 3: PREPROCESSING")
 print("=" * 60)
-print(f"\n• Label encoding map: {dict(zip(le.classes_, le.transform(le.classes_)))}")
+print(f"\nLabel encoding map: {dict(zip(le.classes_, le.transform(le.classes_)))}")
 
 # Train / Test split  (random_state fixes the randomness so results are reproducible)
 X_train, X_test, y_train, y_test = train_test_split(
     X, y_encoded, test_size=0.2, random_state=42, stratify=y_encoded
 )
-print(f"• Train samples: {len(X_train)}  |  Test samples: {len(X_test)}")
+print(f"Train samples: {len(X_train)}  |  Test samples: {len(X_test)}")
 # stratify=y_encoded ensures each class keeps its 50/50/50 ratio in both sets
 
 # Scale features
 scaler  = StandardScaler()
 X_train = scaler.fit_transform(X_train)   # learn mean & std from TRAIN only
 X_test  = scaler.transform(X_test)        # apply SAME scale to TEST
-print("• Features scaled with StandardScaler ✓")
+print(" Features scaled with StandardScaler ")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# STEP 4 — TRAIN MULTIPLE MODELS
-# ══════════════════════════════════════════════════════════════════════════════
-
+#train and evaluate multiple models
 
 models = {
-    "K-Nearest Neighbours": KNeighborsClassifier(n_neighbors=5),
+    "K-Nearest Neighbours" : KNeighborsClassifier(n_neighbors=5),
     "Decision Tree"        : DecisionTreeClassifier(max_depth=4, random_state=42),
     "Random Forest"        : RandomForestClassifier(n_estimators=100, random_state=42),
 }
@@ -136,9 +130,7 @@ for name, model in models.items():
         print("    " + line)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# STEP 5 — VISUALISE RESULTS
-# ══════════════════════════════════════════════════════════════════════════════
+#visualize confusion matrices for each model
 
 
 fig, axes = plt.subplots(1, 3, figsize=(16, 5))
@@ -157,7 +149,7 @@ for ax, (name, res) in zip(axes, results.items()):
 plt.tight_layout()
 plt.savefig("plot_confusion_matrices.png", dpi=150)
 plt.close()
-print("\n✓ Saved: plot_confusion_matrices.png")
+print("\n Saved: plot_confusion_matrices.png")
 
 # Accuracy comparison bar chart
 fig, ax = plt.subplots(figsize=(8, 5))
@@ -174,7 +166,7 @@ for bar, acc in zip(bars, accs):
 plt.tight_layout()
 plt.savefig("plot_accuracy_comparison.png", dpi=150)
 plt.close()
-print("✓ Saved: plot_accuracy_comparison.png")
+print(" Saved: plot_accuracy_comparison.png")
 
 # Feature importance (Random Forest only)
 rf_model    = results["Random Forest"]["model"]
@@ -187,21 +179,14 @@ ax.set_xticks(range(4))
 ax.set_xticklabels([features[i] for i in indices], rotation=20, ha="right")
 ax.set_ylabel("Importance Score")
 ax.set_title("Random Forest — Feature Importances\n(which features matter most?)",
-             fontsize=12, fontweight="bold")
+            fontsize=12, fontweight="bold")
 plt.tight_layout()
 plt.savefig("plot_feature_importance.png", dpi=150)
 plt.close()
-print("✓ Saved: plot_feature_importance.png")
+print(" Saved: plot_feature_importance.png")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# STEP 6 — PREDICT ON NEW / UNSEEN DATA
-# ══════════════════════════════════════════════════════════════════════════════
-"""
-This is the whole point of training a model: predict on flowers
-we haven't labelled yet.  We scale the new data the SAME way we scaled
-the training data, then let the best model predict.
-"""
+#predict and use the best model to predict new samples
 
 best_name  = max(results, key=lambda n: results[n]["accuracy"])
 best_model = results[best_name]["model"]
@@ -228,5 +213,5 @@ for flower, pred, prob in zip(new_flowers, predictions, probabilities):
     vals       = "  ".join(f"{v:>6.1f}" for v in flower)
     print(f"  {vals}  {species:<20} {confidence:.1f}%")
 
-print("\n✅ All done! Check the saved PNG plots for visuals.")
-print(f"🏆 Best model: {best_name}")
+print("\n All done! Check the saved PNG plots for visuals.")
+print(f" Best model: {best_name}")
